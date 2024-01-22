@@ -11,6 +11,7 @@ import torch
 import sys
 import sklearn
 from sklearn.manifold import TSNE
+from sklearn.decomposition import PCA
 from typing import Any
 from dataclasses import dataclass
 
@@ -116,6 +117,25 @@ def tsne_plot(activations_cache: list[Activation], plot_fn: str) -> None:
     ax = sns.scatterplot(x='X', y='Y',hue='Ethical Area',data=df)
     
     plt.savefig(plot_fn)
+
+def pca_plot(activations_cache: list[Activation], plot_name: str) -> None:
+
+    SEED = 42
+
+    data = np.stack([act.hidden_states[-1] for act in activations_cache])
+    labels = [f"{act.ethical_area} {act.positive}" for act in activations_cache]
+
+    pca = PCA(n_components=2, random_state=SEED)
+    projected_data = pca.fit_transform(data)
+
+    df = pd.DataFrame(projected_data, columns=["X", "Y"])
+    df["Ethical Area"] = labels
+    ax = sns.scatterplot(x='X', y='Y', hue='Ethical Area', data=df)
+
+    plt.savefig(plot_name)
+
+
+
     
 
 if __name__ == "__main__":
@@ -172,7 +192,8 @@ if __name__ == "__main__":
         # data.append(activation.hidden_states[-1])
     
     # TODO: Give a better name
-    tsne_plot(activations_cache, "plot.png")
+    # tsne_plot(activations_cache, "plot.png")
+    pca_plot(activations_cache, "pca_plot.png")
 
     # plt.show()
         
